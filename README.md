@@ -44,5 +44,6 @@ python -m http.server 8765
 - `data.js`：預設片語
 - `app.js`：主程式
 - `sw.js`：離線快取（network-first）
+- `help.html`：使用說明；`card.html`：可列印的 A4 床邊小卡
 
 > 本工具只是溝通輔助，不能取代醫療團隊（語言治療師、職能治療師）的評估。

@@ -174,7 +174,7 @@ dialog::backdrop { background: rgba(0,0,0,.5); }
 .dlg input[type=range] { width: 100%; }
 .dlg fieldset { border: 2px solid var(--line); border-radius: 14px; display: grid; gap: 12px; padding: 10px 14px 14px; margin: 0; }
 .dlg legend { font-weight: 800; padding: 0 6px; }
-.dlg button, .file-btn {
+.dlg button, .file-btn, .link-btn {
   min-height: 52px; padding: 6px 16px; border-radius: 12px; border: 2px solid var(--line);
   background: var(--bg); font-weight: 700; font-size: 19px; display: inline-flex; align-items: center; justify-content: center;
 }
@@ -208,3 +208,4 @@ dialog::backdrop { background: rgba(0,0,0,.5); }
   .banner { min-height: 52px; font-size: clamp(22px, 4vw, 36px); }
   .tab, .icon-btn { min-height: 52px; }
 }
+.link-btn { color: var(--fg); text-decoration: none; }

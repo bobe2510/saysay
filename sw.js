@@ -1,8 +1,9 @@
 // Network-first service worker: always tries to fetch the latest version,
 // falls back to the cached copy when the hospital Wi-Fi is down.
-const CACHE = 'saysay-v2';
+const CACHE = 'saysay-v3';
 const ASSETS = [
   './', 'index.html', 'style.css', 'app.js', 'data.js', 'manifest.webmanifest',
+  'help.html', 'card.html', 'doc.css',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'
 ];
 
