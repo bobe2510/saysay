@@ -17,3 +17,7 @@
 ## 結構
 純靜態：index.html / style.css / app.js / data.js / sw.js / manifest.webmanifest / icons/。
 本機測試：`python -m http.server 8765`（.claude/launch.json 有設定）。
+
+## 照顧者文件不上網站
+床邊小卡、使用說明等「以第三人稱描述病人」的內容（例如「他不能說話」「不要當他不在場」）**不能放在網站或 App 裡**，因為病人本人會用這個 App，看到會難受。
+這類文件放在 `handouts/`（已 gitignore），輸出成 PDF 私下交給家屬。App 內所有文字都要以病人本人第一人稱或中性語氣為主。
