@@ -510,7 +510,8 @@
     const ua = navigator.userAgent;
     const isIpad = /iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
     const os = (ua.match(/OS (\d+(?:_\d+)*)/) || ua.match(/Version\/(\d+(?:\.\d+)*)/) || [])[1];
-    diagSet('sys', `裝置：${isIpad ? 'iPad' : /iPhone/.test(ua) ? 'iPhone' : '其他'}　系統／Safari 版本：${os ? os.replace(/_/g, '.') : '不明'}`);
+    const app = /CriOS/.test(ua) ? 'Chrome' : /FxiOS/.test(ua) ? 'Firefox' : /EdgiOS/.test(ua) ? 'Edge' : /Safari/.test(ua) && /Version\//.test(ua) ? 'Safari' : '其他';
+    diagSet('sys', `裝置：${isIpad ? 'iPad' : /iPhone/.test(ua) ? 'iPhone' : '其他'}　系統版本：${os ? os.replace(/_/g, '.') : '不明'}　瀏覽器：${app}`);
     const standalone = navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
     diagSet('mode', `開啟方式：${standalone ? '主畫面圖示' : '瀏覽器'}`);
     diagSet('tts', `電腦語音功能：${hasTTS ? '有' : '沒有'}`);
@@ -531,7 +532,7 @@
   });
   $('#sSpeak').addEventListener('click', () => {
     diagInfo();
-    if (!hasTTS) { diagSet('speak', '② 說話：這個瀏覽器沒有語音功能'); return; }
+    if (!hasTTS) { diagSet('speak', '② 說話：這個瀏覽器沒有語音功能\n　→ 可能開了「鎖定模式」：設定 → 隱私權與安全性 → 鎖定模式'); return; }
     let started = false;
     let failed = false;
     diagSet('speak', '② 說話：送出中…');
