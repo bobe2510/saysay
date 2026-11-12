@@ -35,7 +35,9 @@
 
   const state = {
     board: normalizeBoard(lsGet(LS_BOARD)) || normalizeBoard(clone(window.DEFAULT_BOARD)),
-    settings: Object.assign({}, DEFAULT_SETTINGS, lsGet(LS_SET) || {}),
+    settings: Object.assign({}, DEFAULT_SETTINGS,
+      window.innerWidth < 600 ? { cols: 2, rows: 4 } : {}, // phones: fewer, bigger tiles on first run
+      lsGet(LS_SET) || {}),
     cat: 0, page: 0, edit: false, last: null,
     scan: { on: false, idx: -1, timer: null },
     audioUrls: new Map() // itemId -> objectURL (preloaded so playback stays inside the tap gesture on iOS)

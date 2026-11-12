@@ -91,7 +91,7 @@ button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 }
 .tile .em { font-size: 44px; font-size: min(36cqh, 40cqw); line-height: 1; }
 .tile .tx {
-  font-size: 26px; font-size: min(22cqh, 15cqw); font-weight: 900; line-height: 1.15;
+  font-size: 26px; font-size: min(22cqh, 24cqw); font-weight: 900; line-height: 1.15;
   text-align: center; word-break: break-all;
 }
 .tile .badge { position: absolute; top: 6px; right: 8px; font-size: 18px; opacity: .8; }
@@ -110,13 +110,13 @@ body.editing .tile:not(.empty) { animation: wiggle 1.6s ease-in-out infinite; }
 .pager.single { display: none; }
 .pager #pageInfo { flex: 0 0 auto; font-size: 20px; font-weight: 700; color: var(--muted); min-width: 70px; text-align: center; }
 .pg {
-  flex: 1; min-height: 60px; font-size: 22px; font-weight: 800; border-radius: 14px;
+  flex: 1; min-height: clamp(44px, 7vh, 60px); font-size: 22px; font-weight: 800; border-radius: 14px;
   border: 3px solid var(--line); background: var(--card);
 }
 .pg:disabled { opacity: .35; }
 .quick { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .q {
-  min-height: 84px; border-radius: 16px; border: 4px solid var(--line); background: var(--card);
+  min-height: clamp(52px, 10vh, 84px); border-radius: 16px; border: 4px solid var(--line); background: var(--card);
   display: flex; align-items: center; justify-content: center; gap: 8px;
   font-size: clamp(18px, 2.7vw, 34px); font-weight: 900; padding: 2px 6px; white-space: nowrap;
 }
@@ -198,8 +198,13 @@ dialog::backdrop { background: rgba(0,0,0,.5); }
 .cat-row button { min-width: 48px; padding: 4px 8px; }
 
 @media (max-width: 700px) {
-  .quick { grid-template-columns: repeat(3, 1fr); }
+  .q { flex-direction: column; gap: 0; font-size: clamp(14px, 3.6vw, 22px); }
   .tab { min-width: 72px; font-size: 18px; padding: 4px 8px; }
   .tab .tname { display: none; }
   .tab.active .tname { display: inline; }
+}
+
+@media (max-height: 600px) {
+  .banner { min-height: 52px; font-size: clamp(22px, 4vw, 36px); }
+  .tab, .icon-btn { min-height: 52px; }
 }

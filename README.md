@@ -39,6 +39,8 @@ python -m http.server 8765
 
 然後開 http://localhost:8765 。
 
+線上版：https://bobe2510.github.io/para_talk/
+
 - `data.js`：預設片語
 - `app.js`：主程式
 - `sw.js`：離線快取（network-first）
