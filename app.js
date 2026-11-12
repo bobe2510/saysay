@@ -117,8 +117,12 @@
       || voices.find((v) => /^zh/i.test(v.lang))
       || null;
   }
+  let lastUtterance = null; // keep a reference: some WebKit builds drop utterances that get garbage-collected
   function stopSound() {
-    if (hasTTS) { try { speechSynthesis.cancel(); } catch (e) { /* ignore */ } }
+    // only cancel when something is queued: cancel() immediately followed by speak() can swallow the new utterance on iOS
+    if (hasTTS && (speechSynthesis.speaking || speechSynthesis.pending)) {
+      try { speechSynthesis.cancel(); } catch (e) { /* ignore */ }
+    }
     if (currentAudio) { try { currentAudio.pause(); } catch (e) { /* ignore */ } currentAudio = null; }
   }
   function tts(text, opts) {
@@ -128,6 +132,10 @@
     const v = pickVoice();
     if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'zh-TW'; }
     u.rate = (opts && opts.rate) || state.settings.rate;
+    u.volume = 1;
+    if (opts && opts.on) Object.keys(opts.on).forEach((k) => u.addEventListener(k, opts.on[k]));
+    lastUtterance = u;
+    try { if (speechSynthesis.paused) speechSynthesis.resume(); } catch (e) { /* ignore */ }
     speechSynthesis.speak(u);
   }
   function sayItem(item) {
@@ -476,6 +484,66 @@
   bindSetting('#sScanSpeak', 'scanSpeak', Boolean);
   $('#sRate').addEventListener('input', (e) => { $('#sRateOut').textContent = Number(e.target.value).toFixed(1); });
   $('#sTest').addEventListener('click', () => tts('你好，我想喝水'));
+
+  // ---------------------------------------------------------------- sound check (for remote troubleshooting)
+  function beepWavUrl() {
+    const rate = 22050, n = Math.floor(rate * 0.5);
+    const b = new ArrayBuffer(44 + n * 2), v = new DataView(b);
+    const w = (o, str) => { for (let i = 0; i < str.length; i++) v.setUint8(o + i, str.charCodeAt(i)); };
+    w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    w(36, 'data'); v.setUint32(40, n * 2, true);
+    for (let i = 0; i < n; i++) {
+      const env = Math.min(1, i / 400, (n - i) / 400);
+      v.setInt16(44 + i * 2, Math.sin(2 * Math.PI * 880 * i / rate) * 12000 * env, true);
+    }
+    return URL.createObjectURL(new Blob([b], { type: 'audio/wav' }));
+  }
+  const diag = { lines: {} };
+  function diagSet(key, text) {
+    diag.lines[key] = text;
+    const order = ['sys', 'mode', 'tts', 'voices', 'voice', 'session', 'beep', 'speak'];
+    $('#diagOut').textContent = order.filter((k) => diag.lines[k]).map((k) => diag.lines[k]).join('\n');
+  }
+  function diagInfo() {
+    const ua = navigator.userAgent;
+    const isIpad = /iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    const os = (ua.match(/OS (\d+(?:_\d+)*)/) || ua.match(/Version\/(\d+(?:\.\d+)*)/) || [])[1];
+    diagSet('sys', `裝置：${isIpad ? 'iPad' : /iPhone/.test(ua) ? 'iPhone' : '其他'}　系統／Safari 版本：${os ? os.replace(/_/g, '.') : '不明'}`);
+    const standalone = navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+    diagSet('mode', `開啟方式：${standalone ? '主畫面圖示' : '瀏覽器'}`);
+    diagSet('tts', `電腦語音功能：${hasTTS ? '有' : '沒有'}`);
+    const all = hasTTS ? speechSynthesis.getVoices() : [];
+    diagSet('voices', `語音數量：全部 ${all.length}、中文 ${voices.length}`);
+    const v = pickVoice();
+    diagSet('voice', `使用的語音：${v ? `${v.name}（${v.lang}）` : '系統預設（zh-TW）'}`);
+    diagSet('session', `音訊模式：${navigator.audioSession ? navigator.audioSession.type : '不支援設定'}`);
+  }
+  $('#sBeep').addEventListener('click', () => {
+    diagInfo();
+    stopSound();
+    const a = new Audio(beepWavUrl());
+    a.volume = 1;
+    diagSet('beep', '① 提示音：播放中…');
+    a.play().then(() => diagSet('beep', '① 提示音：已播放（有聽到「嗶」嗎？）'))
+      .catch((e) => diagSet('beep', `① 提示音：播放失敗（${e.name}）`));
+  });
+  $('#sSpeak').addEventListener('click', () => {
+    diagInfo();
+    if (!hasTTS) { diagSet('speak', '② 說話：這個瀏覽器沒有語音功能'); return; }
+    let started = false;
+    let failed = false;
+    diagSet('speak', '② 說話：送出中…');
+    tts('聲音測試，一二三', {
+      on: {
+        start: () => { started = true; diagSet('speak', '② 說話：開始唸了（有聽到嗎？）'); },
+        end: () => { if (!failed) diagSet('speak', started ? '② 說話：唸完了（有聽到嗎？）' : '② 說話：結束但沒有開始'); },
+        error: (e) => { failed = true; diagSet('speak', `② 說話：失敗（${e.error || 'error'}）`); }
+      }
+    });
+    setTimeout(() => { if (!started && !failed) diagSet('speak', '② 說話：3 秒內沒有開始（語音被系統擋住或沒有中文語音）'); }, 3000);
+  });
   $('#sClose').addEventListener('click', () => $('#dlgSettings').close());
   $('#catAdd').addEventListener('click', () => {
     const cats = state.board.categories;
@@ -710,6 +778,8 @@
   document.addEventListener('pointerdown', () => { if (!wakeLock) requestWake(); }, { passive: true });
 
   // ---------------------------------------------------------------- boot
+  // iOS/iPadOS 16.4+: treat our sound as media playback so it is not silenced by mute mode
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { /* ignore */ }
   if (hasTTS) { loadVoices(); speechSynthesis.addEventListener && speechSynthesis.addEventListener('voiceschanged', loadVoices); }
   render();
   $('#banner').classList.add('idle');
