@@ -21,3 +21,6 @@
 ## 照顧者文件不上網站
 床邊小卡、使用說明等「以第三人稱描述病人」的內容（例如「他不能說話」「不要當他不在場」）**不能放在網站或 App 裡**，因為病人本人會用這個 App，看到會難受。
 這類文件放在 `handouts/`（父 repo 已 gitignore；它本身是獨立 repo bobe2510/saysay-guide，網址 https://bobe2510.github.io/saysay-guide/，設 noindex）。App 內絕對不要連到它。App 內所有文字都要以病人本人第一人稱或中性語氣為主。
+
+## 已知狀況
+- iPad 沒聲音、聲音檢查顯示「電腦語音功能：沒有」＋提示音 NotSupportedError → 裝置開了**鎖定模式**（會關掉 speechSynthesis 並限制媒體播放，所有 iOS 瀏覽器都受影響）。解法：Safari 網站設定對本站關閉鎖定模式。2026-11 實際遇過並確認。
